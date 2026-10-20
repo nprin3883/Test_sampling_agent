@@ -1,0 +1,19 @@
+# Inert unless a pipeline is started from the GitLab UI with the variable RUNNER_PROBE=true.
+# Tells you which kind of runner picked the job up (see docs/CI_SETUP.md).
+runner-probe:
+  stage: lint
+  image: alpine:3.20
+  timeout: 5m
+  script:
+    - |
+      if [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
+        echo "RUNNER_HINT: docker executor (running inside a container)"
+      else
+        echo "RUNNER_HINT: shell or other executor (no container detected, 'image:' is ignored)"
+      fi
+    - 'echo "runner: ${CI_RUNNER_DESCRIPTION} / tags: ${CI_RUNNER_TAGS}"'
+    - uname -a
+    - 'command -v python3 || echo "python3: not found"'
+    - 'command -v docker || echo "docker: not found"'
+  rules:
+    - if: $RUNNER_PROBE == "true"

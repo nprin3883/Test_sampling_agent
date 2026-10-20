@@ -1,0 +1,94 @@
+{
+  "migration_id": "MIG-DEMO-001",
+  "ticket_ref": "DEMO-123",
+  "specification_ref": "specs/customer_orders_migration_v3 (synthetic)",
+  "acceptance_criteria": [
+    "Active customers and their orders are migrated",
+    "Soft-deleted customers are excluded"
+  ],
+  "source_definitions": [
+    {
+      "table": "CUSTOMER",
+      "attributes": [
+        {
+          "name": "CUSTOMER_ID"
+        },
+        {
+          "name": "EMAIL"
+        },
+        {
+          "name": "STATUS"
+        },
+        {
+          "name": "DELETED_FLAG"
+        },
+        {
+          "name": "CREATED_AT"
+        }
+      ],
+      "keys": [
+        "CUSTOMER_ID"
+      ]
+    },
+    {
+      "table": "CUSTOMER_ORDER",
+      "attributes": [
+        {
+          "name": "ORDER_ID"
+        },
+        {
+          "name": "CUSTOMER_ID"
+        },
+        {
+          "name": "ORDER_DATE"
+        },
+        {
+          "name": "TOTAL_EUR"
+        },
+        {
+          "name": "LOAD_LAG_DAYS"
+        },
+        {
+          "name": "CORRECTION_OF"
+        }
+      ],
+      "keys": [
+        "ORDER_ID"
+      ]
+    }
+  ],
+  "target_definitions": [
+    {
+      "table": "NEW_CUSTOMER",
+      "attributes": [
+        {
+          "name": "ID"
+        },
+        {
+          "name": "EMAIL"
+        },
+        {
+          "name": "STATUS"
+        }
+      ],
+      "keys": [
+        "ID"
+      ]
+    }
+  ],
+  "environments": {
+    "source": "LEGACY_UAT",
+    "target": "NEW_INT"
+  },
+  "constraints": {
+    "max_sample_rows": 200,
+    "max_cost_eur": 50,
+    "data_handling_rules": [
+      "Mask EMAIL in extracted samples",
+      "Extract only inside LEGACY_UAT"
+    ]
+  },
+  "source_code_refs": [
+    "legacy_customer_load.sql"
+  ]
+}

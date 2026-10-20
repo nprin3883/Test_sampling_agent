@@ -1,0 +1,79 @@
+{
+  "ticket_ref": "DEMO-123",
+  "spec_status": "approved",
+  "total_rows": 48,
+  "rows_by_table": {
+    "CUSTOMER": 18,
+    "CUSTOMER_ORDER": 30
+  },
+  "scenario_coverage": [
+    {
+      "scenario_id": "S01",
+      "matched_rows": 2
+    },
+    {
+      "scenario_id": "S02",
+      "matched_rows": 4
+    },
+    {
+      "scenario_id": "S03",
+      "matched_rows": 2
+    },
+    {
+      "scenario_id": "S04",
+      "matched_rows": 1
+    },
+    {
+      "scenario_id": "S05",
+      "matched_rows": 2
+    },
+    {
+      "scenario_id": "S06",
+      "matched_rows": 2
+    },
+    {
+      "scenario_id": "S07",
+      "matched_rows": 2
+    },
+    {
+      "scenario_id": "S08",
+      "matched_rows": 1
+    },
+    {
+      "scenario_id": "S09",
+      "matched_rows": 0
+    }
+  ],
+  "referential_integrity": {
+    "checks": [
+      {
+        "parent": "CUSTOMER",
+        "child": "CUSTOMER_ORDER",
+        "key": "CUSTOMER_ID",
+        "orphans": 0
+      }
+    ],
+    "ok": true
+  },
+  "volume_limit": {
+    "max_sample_rows": 200,
+    "total_rows": 48,
+    "ok": true
+  },
+  "summary": {
+    "covered": [
+      "S01",
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "S06",
+      "S07",
+      "S08"
+    ],
+    "missed": [],
+    "declared_gaps": [
+      "S09"
+    ]
+  }
+}

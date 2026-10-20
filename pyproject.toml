@@ -1,0 +1,37 @@
+[tool.pytest.ini_options]
+minversion = "7.0"
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = [
+    "ts01: request pack is complete (step 1)",
+    "ts02: brief works on metadata, never raw records (step 2)",
+    "ts03: brief surfaces gaps instead of inventing (step 2)",
+    "ts04: missing source code lowers confidence (step 2)",
+    "ts05: scenarios are complete, ranked and cover the edge categories (step 3)",
+    "ts06: coverage gaps are explicit (step 3)",
+    "ts07: volume limit, relationships and traceability (step 3)",
+    "ts08: extraction queries are read-only drafts (step 3)",
+    "ts09: human approval gate (step 4)",
+    "ts10: sample is verified against the specification (step 5)",
+    "ts11: reported numbers are reproducible (step 5)",
+    "ts12: no personal data in artifacts or samples",
+    "ts13: command line end to end",
+    "ts14: the skill package is valid and self-contained",
+]
+
+[tool.coverage.run]
+source = ["src/sampling_validator"]
+relative_files = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]

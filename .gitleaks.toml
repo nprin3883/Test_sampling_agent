@@ -1,0 +1,10 @@
+title = "Gitleaks config"
+
+[allowlist]
+  description = "Known false positives"
+  paths = [
+    '''(^|/)\.gitleaks\.toml$''',
+    '''(^|/)go\.sum$''',
+    '''(^|/)package-lock\.json$''',
+    '''(^|/)yarn\.lock$''',
+  ]

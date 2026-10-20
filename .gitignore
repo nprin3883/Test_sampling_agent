@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+report.xml
+dist/
+trivy-fs-results.json
+.sonar/

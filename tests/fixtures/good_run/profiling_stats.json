@@ -1,0 +1,37 @@
+{
+  "CUSTOMER": {
+    "rows": 1850000,
+    "EMAIL": {
+      "null_rate": 0.031,
+      "distinct_ratio": 0.962
+    },
+    "STATUS": {
+      "values": {
+        "A": 0.88,
+        "S": 0.07,
+        "X": 0.05
+      }
+    },
+    "DELETED_FLAG": {
+      "values": {
+        "N": 0.97,
+        "Y": 0.03
+      }
+    }
+  },
+  "CUSTOMER_ORDER": {
+    "rows": 9400000,
+    "TOTAL_EUR": {
+      "min": 0,
+      "max": 48200.0,
+      "share_zero": 0.002,
+      "share_gt_10000": 0.004
+    },
+    "LOAD_LAG_DAYS": {
+      "share_gt_2": 0.011
+    },
+    "CORRECTION_OF": {
+      "null_rate": 0.987
+    }
+  }
+}

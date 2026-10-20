@@ -1,0 +1,137 @@
+variables:
+  PYTHON_IMAGE: python:3.12-slim
+  GITLEAKS_IMAGE: zricethezav/gitleaks:v8.18.4
+  TRIVY_IMAGE: aquasec/trivy:0.57.1
+  SONAR_SCANNER_IMAGE: sonarsource/sonar-scanner-cli:11.2
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+.python-job:
+  image: $PYTHON_IMAGE
+  cache:
+    key:
+      files: [requirements-dev.txt]
+    paths: [.cache/pip]
+  before_script:
+    - pip install -r requirements-dev.txt
+
+lint-code:
+  extends: .python-job
+  stage: lint
+  timeout: 10m
+  script:
+    - ruff check src tests scripts skill
+
+test-validators:
+  extends: .python-job
+  stage: test
+  timeout: 30m
+  script:
+    - >
+      python -m pytest --cov=src/sampling_validator --cov-report=term-missing
+      --cov-report=xml:coverage.xml --junitxml=report.xml --cov-fail-under=80
+  coverage: '/^TOTAL\s+.*?(\d+(?:\.\d+)?)%\s*$/'
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths: [coverage.xml, report.xml]
+    reports:
+      junit: report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+security-sonarqube:
+  stage: security
+  timeout: 15m
+  image:
+    name: $SONAR_SCANNER_IMAGE
+    entrypoint: [""]
+  variables:
+    GIT_DEPTH: "0"
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+  cache:
+    key: sonar
+    paths: [.sonar/cache]
+  script:
+    - |
+      for name in SONARQUBE_TOKEN SONARQUBE_URL SONAR_PROJECT_KEY; do
+        if [ -z "$(printenv "$name")" ]; then
+          echo "ERROR: CI/CD variable $name is not set - see docs/CI_SETUP.md"
+          exit 1
+        fi
+      done
+    - >
+      sonar-scanner -Dsonar.projectKey="${SONAR_PROJECT_KEY}"
+      -Dsonar.host.url="${SONARQUBE_URL}" -Dsonar.token="${SONARQUBE_TOKEN}"
+      -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+
+security-trivy-fs:
+  stage: security
+  timeout: 15m
+  image:
+    name: $TRIVY_IMAGE
+    entrypoint: [""]
+  variables:
+    TRIVY_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/trivy"
+  cache:
+    key: trivy-db
+    paths: [.cache/trivy]
+  script:
+    - trivy fs --severity HIGH --exit-code 0 .
+    - trivy fs --severity CRITICAL --exit-code 1 --format json --output trivy-fs-results.json .
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths: [trivy-fs-results.json]
+
+security-gitleaks:
+  stage: security
+  timeout: 15m
+  image:
+    name: $GITLEAKS_IMAGE
+    entrypoint: [""]
+  variables:
+    GIT_DEPTH: "0"
+  script:
+    - gitleaks detect --source . --verbose --exit-code 1
+
+.package-skill:
+  extends: .python-job
+  stage: package
+  timeout: 15m
+  before_script: []
+  script:
+    - VERSION="$(cat VERSION)"
+    - |
+      case "$CI_COMMIT_BRANCH" in
+        develop) TAG="${CI_PIPELINE_IID}" ;;
+        release/*) TAG="v${VERSION}RC${CI_PIPELINE_IID}" ;;
+        main) TAG="v${VERSION}" ;;
+        *) TAG="${CI_PIPELINE_IID}" ;;
+      esac
+    - python scripts/build_skill.py --out dist --tag "${TAG}-${CI_COMMIT_SHORT_SHA}"
+
+package-skill-int:
+  extends: .package-skill
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+  artifacts:
+    expire_in: 7 days
+    paths: [dist/*.skill]
+
+package-skill-uat:
+  extends: .package-skill
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\//
+  artifacts:
+    expire_in: 30 days
+    paths: [dist/*.skill]
+
+package-skill-prod:
+  extends: .package-skill
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  artifacts:
+    expire_in: 1 year
+    paths: [dist/*.skill]

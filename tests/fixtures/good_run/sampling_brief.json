@@ -1,0 +1,52 @@
+{
+  "status": "validated",
+  "code_available": true,
+  "confidence": "normal",
+  "inputs_used": {
+    "schemas": true,
+    "profiling_stats": true,
+    "source_code": true,
+    "raw_records": false
+  },
+  "business_rules": [
+    {
+      "id": "R1",
+      "description": "Status A, S map to ACTIVE, SUSPENDED; anything else ARCHIVED",
+      "source_ref": "legacy_customer_load.sql:4"
+    },
+    {
+      "id": "R2",
+      "description": "Soft-deleted customers are not migrated",
+      "source_ref": "legacy_customer_load.sql:7"
+    },
+    {
+      "id": "R3",
+      "description": "Duplicate EMAIL keeps the latest record",
+      "source_ref": "legacy_customer_load.sql:8"
+    },
+    {
+      "id": "R4",
+      "description": "Orders loaded more than 2 days late are reprocessed",
+      "source_ref": "legacy_customer_load.sql:11"
+    },
+    {
+      "id": "R5",
+      "description": "Order total 0 goes to review; above 10000 needs second approval",
+      "source_ref": "legacy_customer_load.sql:12"
+    },
+    {
+      "id": "R6",
+      "description": "Missing EMAIL gets a placeholder address",
+      "source_ref": "legacy_customer_load.sql:13"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "Q1",
+      "question": "Are CANCELLED orders in scope?",
+      "blocking": true,
+      "answered": true,
+      "answer": "Yes, all statuses"
+    }
+  ]
+}

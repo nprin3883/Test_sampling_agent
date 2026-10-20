@@ -1,0 +1,121 @@
+name: "CI: Sampling - Build & Test"
+on:
+  push:
+    branches: [develop, main, "release/**", "feature/**", "bugfix/**", "hotfix/**"]
+  pull_request:
+    branches: [develop, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  lint-code:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check src tests scripts skill
+
+  test-validators:
+    name: Test Validators
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [lint-code]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: >
+          python -m pytest --cov=src/sampling_validator --cov-report=term-missing
+          --cov-report=xml:coverage.xml --junitxml=report.xml --cov-fail-under=80
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            coverage.xml
+            report.xml
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [test-validators]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: test-reports
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONARQUBE_URL }}
+        with:
+          args: -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+      - name: SonarQube Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+      - name: Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          severity: CRITICAL
+          exit-code: "1"
+
+  package-skill:
+    name: Package Skill
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [security-scan]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Set skill tag and retention
+        id: meta
+        run: |
+          VERSION="$(cat VERSION)"
+          if [[ "${GITHUB_REF}" == refs/heads/develop ]]; then
+            TAG="${{ github.run_number }}"; RETENTION=7
+          elif [[ "${GITHUB_REF}" == refs/heads/release/* ]]; then
+            TAG="v${VERSION}RC${{ github.run_number }}"; RETENTION=30
+          else
+            TAG="v${VERSION}"; RETENTION=365
+          fi
+          echo "tag=${TAG}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "retention=${RETENTION}" >> "$GITHUB_OUTPUT"
+      - run: python scripts/build_skill.py --out dist --tag "${{ steps.meta.outputs.tag }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: skill-${{ steps.meta.outputs.tag }}
+          path: dist/*.skill
+          retention-days: ${{ steps.meta.outputs.retention }}

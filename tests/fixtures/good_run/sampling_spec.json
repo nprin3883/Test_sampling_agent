@@ -1,0 +1,215 @@
+{
+  "scenarios": [
+    {
+      "id": "S01",
+      "title": "Customer without e-mail",
+      "category": "null",
+      "risk": "high",
+      "covered": true,
+      "rule_refs": [
+        "R6"
+      ],
+      "rationale": "Placeholder generation is untested by random samples",
+      "match": {
+        "table": "CUSTOMER",
+        "conditions": [
+          {
+            "field": "EMAIL",
+            "op": "is_null"
+          }
+        ]
+      },
+      "extraction_query": "SELECT * FROM CUSTOMER WHERE EMAIL IS NULL FETCH FIRST 5 ROWS ONLY"
+    },
+    {
+      "id": "S02",
+      "title": "Customers sharing the same e-mail",
+      "category": "duplicate",
+      "risk": "high",
+      "covered": true,
+      "rule_refs": [
+        "R3"
+      ],
+      "rationale": "Merge logic keeps the latest record",
+      "match": {
+        "table": "CUSTOMER",
+        "conditions": [
+          {
+            "field": "EMAIL",
+            "op": "duplicate"
+          }
+        ]
+      },
+      "extraction_query": "SELECT * FROM CUSTOMER WHERE EMAIL IN (SELECT EMAIL FROM CUSTOMER GROUP BY EMAIL HAVING COUNT(*) > 1) FETCH FIRST 8 ROWS ONLY"
+    },
+    {
+      "id": "S03",
+      "title": "Soft-deleted customer with orders",
+      "category": "deleted",
+      "risk": "high",
+      "covered": true,
+      "rule_refs": [
+        "R2"
+      ],
+      "rationale": "Excluded customers must not drag orders along",
+      "match": {
+        "table": "CUSTOMER",
+        "conditions": [
+          {
+            "field": "DELETED_FLAG",
+            "op": "eq",
+            "value": "Y"
+          }
+        ]
+      },
+      "extraction_query": "SELECT * FROM CUSTOMER WHERE DELETED_FLAG = 'Y' FETCH FIRST 5 ROWS ONLY"
+    },
+    {
+      "id": "S04",
+      "title": "Order total exactly zero",
+      "category": "boundary",
+      "risk": "medium",
+      "covered": true,
+      "rule_refs": [
+        "R5"
+      ],
+      "rationale": "Lower boundary of the review rule",
+      "match": {
+        "table": "CUSTOMER_ORDER",
+        "conditions": [
+          {
+            "field": "TOTAL_EUR",
+            "op": "eq",
+            "value": "0"
+          }
+        ]
+      },
+      "extraction_query": "SELECT * FROM CUSTOMER_ORDER WHERE TOTAL_EUR = 0 FETCH FIRST 3 ROWS ONLY"
+    },
+    {
+      "id": "S05",
+      "title": "Order total above 10000",
+      "category": "boundary",
+      "risk": "medium",
+      "covered": true,
+      "rule_refs": [
+        "R5"
+      ],
+      "rationale": "Upper boundary needing a second approval",
+      "match": {
+        "table": "CUSTOMER_ORDER",
+        "conditions": [
+          {
+            "field": "TOTAL_EUR",
+            "op": "gt",
+            "value": "10000"
+          }
+        ]
+      },
+      "extraction_query": "SELECT * FROM CUSTOMER_ORDER WHERE TOTAL_EUR > 10000 FETCH FIRST 3 ROWS ONLY"
+    },
+    {
+      "id": "S06",
+      "title": "Late-arriving order",
+      "category": "late_arriving",
+      "risk": "medium",
+      "covered": true,
+      "rule_refs": [
+        "R4"
+      ],
+      "rationale": "Reprocessing path of the load",
+      "match": {
+        "table": "CUSTOMER_ORDER",
+        "conditions": [
+          {
+            "field": "LOAD_LAG_DAYS",
+            "op": "gt",
+            "value": "2"
+          }
+        ]
+      },
+      "extraction_query": "SELECT * FROM CUSTOMER_ORDER WHERE LOAD_LAG_DAYS > 2 FETCH FIRST 3 ROWS ONLY"
+    },
+    {
+      "id": "S07",
+      "title": "Suspended customer",
+      "category": "business",
+      "risk": "medium",
+      "covered": true,
+      "rule_refs": [
+        "R1"
+      ],
+      "rationale": "Status mapping other than ACTIVE",
+      "match": {
+        "table": "CUSTOMER",
+        "conditions": [
+          {
+            "field": "STATUS",
+            "op": "eq",
+            "value": "S"
+          }
+        ]
+      },
+      "extraction_query": "SELECT * FROM CUSTOMER WHERE STATUS = 'S' FETCH FIRST 3 ROWS ONLY"
+    },
+    {
+      "id": "S08",
+      "title": "Corrected order",
+      "category": "corrected",
+      "risk": "low",
+      "covered": true,
+      "rule_refs": [],
+      "rationale": "Corrections reference an earlier order; seen in profile (1.3 percent)",
+      "match": {
+        "table": "CUSTOMER_ORDER",
+        "conditions": [
+          {
+            "field": "CORRECTION_OF",
+            "op": "not_null"
+          }
+        ]
+      },
+      "extraction_query": "SELECT * FROM CUSTOMER_ORDER WHERE CORRECTION_OF IS NOT NULL FETCH FIRST 3 ROWS ONLY"
+    },
+    {
+      "id": "S09",
+      "title": "Two orders of one customer tied on order date",
+      "category": "tie",
+      "risk": "low",
+      "covered": false,
+      "rule_refs": [],
+      "rationale": "No rule in the code breaks ties; behaviour of the target is unknown"
+    }
+  ],
+  "coverage_gaps": [
+    {
+      "scenario_id": "S09",
+      "reason": "No tie-breaking rule in the code and no ties found in the profile"
+    }
+  ],
+  "edge_categories_not_applicable": {},
+  "sampling_strategy": {
+    "max_sample_rows": 200,
+    "per_table_allocation": {
+      "CUSTOMER": 60,
+      "CUSTOMER_ORDER": 120
+    },
+    "relationships": [
+      {
+        "parent": "CUSTOMER",
+        "child": "CUSTOMER_ORDER",
+        "key": "CUSTOMER_ID"
+      }
+    ]
+  },
+  "approval": {
+    "status": "approved",
+    "approved_by": {
+      "data_architect": "A. Example",
+      "data_owner": "B. Example"
+    },
+    "masking_confirmed": true,
+    "gaps_accepted": true,
+    "date": "2026-01-15"
+  }
+}

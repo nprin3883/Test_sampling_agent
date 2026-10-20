@@ -1,0 +1,25 @@
+# CI: Sampling - Build & Test
+# Pipeline definition lives in ci/sampling.yml (convention: .gitlab-ci.yml includes ci/<app>.yml).
+# Stages build, publish and deploy do not apply: no compiled artifact, image or environment.
+stages:
+  - lint
+  - test
+  - security
+  - package
+
+workflow:
+  name: "CI: Sampling - Build & Test"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH =~ /^(develop|main|release\/.+)$/ || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH =~ /^(feature|bugfix|hotfix)\/.+$/
+    - if: $CI_PIPELINE_SOURCE == "web"
+
+default:
+  interruptible: true
+
+include:
+  - local: ci/sampling.yml
+  - local: ci/runner-probe.yml
