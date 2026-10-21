@@ -72,7 +72,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONARQUBE_URL }}
         with:
-          args: -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+          args: >-
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
       - name: SonarQube Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
         timeout-minutes: 5
