@@ -13,11 +13,12 @@ Everything here is **synthetic**. Never commit client data, extracts or credenti
 |---|---|
 | `skill/test-sampling-agent/` | The agent as a Claude skill (instructions, references) |
 | `src/sampling_validator/` | Deterministic checks and the sample verifier (Python stdlib only) |
-| `tests/` | 106 tests grouped in 14 scenarios (TS-01..TS-14) and a synthetic example run |
+| `tests/` | 142 tests grouped in 16 scenarios (TS-01..TS-16) and a synthetic example run |
+| `evaluation/` | Templates for the LLM-vs-agent evaluation (real data goes in `evaluation/data/`, git-ignored) |
 | `scripts/` | `run_scenarios.sh`, `build_skill.py` |
 | `.gitlab-ci.yml`, `ci/` | GitLab pipeline: lint, test, security, package |
 | `.github/workflows/ci-sampling.yml` | GitHub Actions equivalent, ready for the move |
-| `docs/` | `TEST_SCENARIOS.md`, `CI_SETUP.md` |
+| `docs/` | `TEST_SCENARIOS.md`, `CI_SETUP.md`, `EVALUATION_PROTOCOL.md` |
 
 ## Run it locally
 
@@ -26,7 +27,7 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt
 
 make ci-local        # lint + tests with the 80% coverage gate + skill build
-make scenarios       # TS-01..TS-14 one by one, pass/fail table
+make scenarios       # TS-01..TS-16 one by one, pass/fail table
 make example         # validate the synthetic example run
 ```
 
@@ -56,6 +57,13 @@ python3 -m sampling_validator.cli check-run path/to/run
 
 Exit code 0 = no errors, 1 = errors found, 2 = unreadable input. Add `--json` before the command for
 machine-readable output.
+
+## Evaluate the agent against a general-purpose LLM
+
+`docs/EVALUATION_PROTOCOL.md` describes the proposed head-to-head study: design, procedure,
+criteria, formulas and the success rule. `python3 -m sampling_validator.cli evaluate <folder>`
+scores it and refuses to give a verdict until the thresholds are agreed. The study has not been run:
+the only data in the repository is invented and flagged as illustrative.
 
 ## Deploy
 

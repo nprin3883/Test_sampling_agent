@@ -1,0 +1,8 @@
+{
+  "_illustrative": true,
+  "agreed_by": "Example Data Architect",
+  "agreed_on": "2026-01-10",
+  "min_coverage_gain": 0.15,
+  "max_critical_misses": 0,
+  "max_effort_ratio": 1.0
+}

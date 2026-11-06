@@ -1,5 +1,7 @@
 # Test scenarios
 
+TS-01 to TS-14 prove one rule of the card each; TS-15 and TS-16 test the scoring tool of the
+[evaluation protocol](EVALUATION_PROTOCOL.md), which is a separate, still unexecuted study.
 Each scenario proves one rule of the card. Every scenario has a positive case (a valid artifact is
 accepted) and negative cases (a broken artifact is rejected with a specific finding code).
 
@@ -19,6 +21,8 @@ accepted) and negative cases (a broken artifact is rejected with a specific find
 | TS-12 | all | No personal data in artifacts; extracted sample is masked | DAT-001, DAT-002 | `python3 -m pytest -m ts12 -q` |
 | TS-13 | all | The command line works end to end, with correct exit codes | exit 1 / 2 | `python3 -m pytest -m ts13 -q` |
 | TS-14 | - | The skill is valid, self-contained and runs from a clean unzip | - | `python3 -m pytest -m ts14 -q` |
+| TS-15 | eval | Evaluation scoring is correct: coverage, misses, precision, honesty, medians, verdict rules | - | `python3 -m pytest -m ts15 -q` |
+| TS-16 | eval | Evaluation integrity: no verdict before agreed thresholds, invalid runs rejected, illustrative data flagged | EVL-001..010, DAT-001 | `python3 -m pytest -m ts16 -q` |
 
 Run all of them with a result table: `bash scripts/run_scenarios.sh`.
 

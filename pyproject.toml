@@ -18,6 +18,8 @@ markers = [
     "ts12: no personal data in artifacts or samples",
     "ts13: command line end to end",
     "ts14: the skill package is valid and self-contained",
+    "ts15: evaluation scoring: agent vs general-purpose LLM",
+    "ts16: evaluation protocol integrity: thresholds, inputs, flags",
 ]
 
 [tool.coverage.run]

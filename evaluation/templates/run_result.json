@@ -1,0 +1,20 @@
+{
+  "_instructions": "One file per run, in cases/<case_id>/runs/. arm is general_llm, agent or baseline. covered_reference_ids: reference scenarios present in the extracted sample. proposed_scenarios: what the arm proposed, with the reference id it matches or null if it matches none. declared_gap_ids: scenarios the arm said it could not cover. Use pseudonyms for engineers (E1, E2).",
+  "run_id": "CASE-001-AGENT-E1",
+  "case_id": "CASE-001",
+  "arm": "agent",
+  "engineer": "E1",
+  "covered_reference_ids": [],
+  "proposed_scenarios": [
+    {
+      "title": "",
+      "reference_id": null
+    }
+  ],
+  "declared_gap_ids": [],
+  "validators_pass": false,
+  "time_to_approval_min": 0,
+  "iterations": 1,
+  "sample_size_rows": 0,
+  "reviewer_minutes": 0
+}

@@ -1,0 +1,8 @@
+{
+  "_instructions": "Agree these three values with the Data Architect BEFORE the first run, then fill agreed_by and agreed_on. Without them the tool gives no verdict.",
+  "agreed_by": "",
+  "agreed_on": "",
+  "min_coverage_gain": null,
+  "max_critical_misses": null,
+  "max_effort_ratio": null
+}

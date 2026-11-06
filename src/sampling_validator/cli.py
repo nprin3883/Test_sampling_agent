@@ -6,7 +6,7 @@ import json
 import sys
 from pathlib import Path
 
-from . import checks, data_guard, verify_sample
+from . import checks, data_guard, evaluation, verify_sample
 from .findings import Finding, err, has_errors
 
 RUN_FILES = {
@@ -119,6 +119,18 @@ def cmd_check_run(args) -> int:
     return int(failed)
 
 
+def cmd_evaluate(args) -> int:
+    result = evaluation.evaluate(args.dir)
+    report = evaluation.render_report(result)
+    if args.out:
+        Path(args.out).write_text(report + "\n", encoding="utf-8")
+    if args.json:
+        print(json.dumps({**result, "findings": [f.as_dict() for f in result["findings"]]}))
+    else:
+        print(report)
+    return int(has_errors(result["findings"]))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sampling_validator")
     parser.add_argument("--json", action="store_true", help="machine-readable output")
@@ -152,6 +164,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--ticket", required=True)
     p.add_argument("--out")
     p.set_defaults(func=cmd_verify)
+
+    p = sub.add_parser("evaluate", help="score the agent against a general-purpose LLM")
+    p.add_argument("dir")
+    p.add_argument("--out", help="also write the report as Markdown")
+    p.set_defaults(func=cmd_evaluate)
 
     p = sub.add_parser("check-run", help="check every artifact present in a run folder")
     p.add_argument("dir")

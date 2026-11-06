@@ -1,0 +1,46 @@
+{
+  "_illustrative": true,
+  "case_id": "CASE-A",
+  "scenarios": [
+    {
+      "id": "R01",
+      "title": "Reference scenario R01",
+      "risk": "high"
+    },
+    {
+      "id": "R02",
+      "title": "Reference scenario R02",
+      "risk": "high"
+    },
+    {
+      "id": "R03",
+      "title": "Reference scenario R03",
+      "risk": "high"
+    },
+    {
+      "id": "R04",
+      "title": "Reference scenario R04",
+      "risk": "medium"
+    },
+    {
+      "id": "R05",
+      "title": "Reference scenario R05",
+      "risk": "medium"
+    },
+    {
+      "id": "R06",
+      "title": "Reference scenario R06",
+      "risk": "medium"
+    },
+    {
+      "id": "R07",
+      "title": "Reference scenario R07",
+      "risk": "low"
+    },
+    {
+      "id": "R08",
+      "title": "Reference scenario R08",
+      "risk": "low"
+    }
+  ]
+}

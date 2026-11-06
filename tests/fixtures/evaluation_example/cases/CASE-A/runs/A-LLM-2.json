@@ -1,0 +1,43 @@
+{
+  "_illustrative": true,
+  "run_id": "A-LLM-2",
+  "case_id": "CASE-A",
+  "arm": "general_llm",
+  "engineer": "E2",
+  "covered_reference_ids": [
+    "R01",
+    "R02",
+    "R03",
+    "R05"
+  ],
+  "proposed_scenarios": [
+    {
+      "title": "Proposed scenario 1",
+      "reference_id": "R01"
+    },
+    {
+      "title": "Proposed scenario 2",
+      "reference_id": "R02"
+    },
+    {
+      "title": "Proposed scenario 3",
+      "reference_id": "R03"
+    },
+    {
+      "title": "Proposed scenario 4",
+      "reference_id": "R05"
+    },
+    {
+      "title": "Proposed scenario 5",
+      "reference_id": null
+    }
+  ],
+  "declared_gap_ids": [
+    "R08"
+  ],
+  "validators_pass": false,
+  "time_to_approval_min": 40,
+  "iterations": 3,
+  "sample_size_rows": 150,
+  "reviewer_minutes": 25
+}

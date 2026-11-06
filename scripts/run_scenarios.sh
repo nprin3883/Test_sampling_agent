@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run the test scenarios TS-01..TS-14 one by one and print a pass/fail table.
+# Run the test scenarios TS-01..TS-16 one by one and print a pass/fail table.
 # Usage: scripts/run_scenarios.sh            # all scenarios
 #        scripts/run_scenarios.sh ts09 ts10  # selected scenarios
 set -u
@@ -22,6 +22,8 @@ DESCRIPTIONS=(
   "ts12|No personal data in artifacts or samples"
   "ts13|Command line end to end"
   "ts14|Skill package valid and self-contained"
+  "ts15|Evaluation scoring: agent vs general-purpose LLM"
+  "ts16|Evaluation protocol integrity: thresholds, inputs, flags"
 )
 
 selected=("$@")

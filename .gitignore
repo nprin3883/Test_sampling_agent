@@ -8,5 +8,6 @@ __pycache__/
 coverage.xml
 report.xml
 dist/
+evaluation/data/
 trivy-fs-results.json
 .sonar/

@@ -1,0 +1,47 @@
+{
+  "_illustrative": true,
+  "run_id": "B-AGT-2",
+  "case_id": "CASE-B",
+  "arm": "agent",
+  "engineer": "E1",
+  "covered_reference_ids": [
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "B05",
+    "B06"
+  ],
+  "proposed_scenarios": [
+    {
+      "title": "Proposed scenario 1",
+      "reference_id": "B01"
+    },
+    {
+      "title": "Proposed scenario 2",
+      "reference_id": "B02"
+    },
+    {
+      "title": "Proposed scenario 3",
+      "reference_id": "B03"
+    },
+    {
+      "title": "Proposed scenario 4",
+      "reference_id": "B04"
+    },
+    {
+      "title": "Proposed scenario 5",
+      "reference_id": "B05"
+    },
+    {
+      "title": "Proposed scenario 6",
+      "reference_id": "B06"
+    }
+  ],
+  "declared_gap_ids": [],
+  "validators_pass": true,
+  "time_to_approval_min": 28,
+  "iterations": 1,
+  "sample_size_rows": 95,
+  "reviewer_minutes": 12
+}

@@ -1,0 +1,11 @@
+{
+  "_instructions": "Written by the Data Architect before any run and kept hidden from the engineers. One file per case, in cases/<case_id>/. risk is high, medium or low.",
+  "case_id": "CASE-001",
+  "scenarios": [
+    {
+      "id": "R01",
+      "title": "",
+      "risk": "high"
+    }
+  ]
+}
