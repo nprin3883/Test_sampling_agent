@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -36,8 +36,8 @@ jobs:
     timeout-minutes: 30
     needs: [lint-code]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -46,7 +46,7 @@ jobs:
       - run: >
           python -m pytest --cov=src/sampling_validator --cov-report=term-missing
           --cov-report=xml:coverage.xml --junitxml=report.xml --cov-fail-under=80
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: test-reports
@@ -60,14 +60,14 @@ jobs:
     timeout-minutes: 15
     needs: [test-validators]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: test-reports
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONARQUBE_URL }}
@@ -98,8 +98,8 @@ jobs:
     needs: [security-scan]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Set skill tag and retention
@@ -116,7 +116,7 @@ jobs:
           echo "tag=${TAG}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           echo "retention=${RETENTION}" >> "$GITHUB_OUTPUT"
       - run: python scripts/build_skill.py --out dist --tag "${{ steps.meta.outputs.tag }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: skill-${{ steps.meta.outputs.tag }}
           path: dist/*.skill
