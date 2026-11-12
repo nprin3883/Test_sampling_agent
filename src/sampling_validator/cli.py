@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -30,6 +31,19 @@ def _emit(label: str, findings: list[Finding], as_json: bool) -> None:
     print(f"[{status}] {label}")
     for finding in findings:
         print(f"   {finding}")
+
+
+def _output_path(raw: str, suffix: str) -> str:
+    """--out must name a file with the expected suffix inside the current directory.
+
+    The command lines are often written by an agent from files it has read, so a written path is
+    never trusted: it is normalised, then checked against the working directory.
+    """
+    base = os.path.realpath(os.getcwd())
+    target = os.path.realpath(os.path.join(base, raw))
+    if not target.startswith(base + os.sep) or not target.lower().endswith(suffix):
+        raise ValueError(f"--out must be a {suffix} file inside the current directory")
+    return target
 
 
 def _guard(artifact) -> list[Finding]:
@@ -84,7 +98,8 @@ def cmd_verify(args) -> int:
     report = verify_sample.build_report(spec, sample, args.ticket)
     text = json.dumps(report, indent=2)
     if args.out:
-        Path(args.out).write_text(text + "\n", encoding="utf-8")
+        with open(_output_path(args.out, ".json"), "w", encoding="utf-8") as handle:
+            handle.write(text + "\n")
     elif not args.json:
         print(text)
     findings = checks.check_coverage_report(report, spec) + data_guard.scan_sample(sample)
@@ -123,7 +138,8 @@ def cmd_evaluate(args) -> int:
     result = evaluation.evaluate(args.dir)
     report = evaluation.render_report(result)
     if args.out:
-        Path(args.out).write_text(report + "\n", encoding="utf-8")
+        with open(_output_path(args.out, ".md"), "w", encoding="utf-8") as handle:
+            handle.write(report + "\n")
     if args.json:
         print(json.dumps({**result, "findings": [f.as_dict() for f in result["findings"]]}))
     else:

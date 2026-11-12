@@ -9,5 +9,6 @@ coverage.xml
 report.xml
 dist/
 evaluation/data/
+demo_run/
 trivy-fs-results.json
 .sonar/

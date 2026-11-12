@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from helpers import FIXTURES, run_cli, write_json
+from helpers import FIXTURES, in_dir, run_cli, write_json
 from sampling_validator import evaluation
 
 EXAMPLE = FIXTURES / "evaluation_example"
@@ -230,9 +230,14 @@ def test_ts16_templates_are_valid_json_and_not_agreed():
 def test_ts16_command_line_prints_writes_and_signals_errors(tmp_path):
     code, out, _ = run_cli("evaluate", EXAMPLE)
     assert code == 0 and "## Verdict: PASS" in out and "ILLUSTRATIVE DATA" in out
-    report = Path(tmp_path) / "report.md"
-    assert run_cli("evaluate", EXAMPLE, "--out", report)[0] == 0
-    assert report.read_text("utf-8").startswith("# Evaluation report")
+    work = Path(tmp_path) / "work"
+    work.mkdir()
+    with in_dir(work):
+        assert run_cli("evaluate", EXAMPLE, "--out", "report.md")[0] == 0
+        code, _, err = run_cli("evaluate", EXAMPLE, "--out", "../escape.md")
+    assert code == 2 and "--out must be a .md file" in err
+    assert (work / "report.md").read_text("utf-8").startswith("# Evaluation report")
+    assert not (Path(tmp_path) / "escape.md").exists()
     code, out, _ = run_cli("--json", "evaluate", EXAMPLE)
     assert code == 0 and json.loads(out)["verdict"]["status"] == "PASS"
     root = copy_example(tmp_path)

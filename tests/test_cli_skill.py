@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from helpers import GOOD, copy_run, load, run_cli, write_json
+from helpers import GOOD, copy_run, in_dir, load, run_cli, write_json
 
 ROOT = Path(__file__).resolve().parent.parent
 ENV = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
@@ -98,7 +98,6 @@ def test_ts13_unmasked_sample_fails_the_run(tmp_path):
 
 @pytest.mark.ts13
 def test_ts13_each_command_accepts_the_good_run(tmp_path):
-    out_file = Path(tmp_path) / "report.json"
     commands = [
         ("request", GOOD / "request_pack.json"),
         ("brief", GOOD / "sampling_brief.json", "--request", GOOD / "request_pack.json"),
@@ -107,12 +106,15 @@ def test_ts13_each_command_accepts_the_good_run(tmp_path):
         ("report", GOOD / "coverage_report.json", "--spec", GOOD / "sampling_spec.json",
          "--sample-dir", GOOD / "sample"),
         ("verify", "--spec", GOOD / "sampling_spec.json", "--sample-dir", GOOD / "sample",
-         "--ticket", "DEMO-123", "--out", out_file),
+         "--ticket", "DEMO-123", "--out", "run/coverage_report.json"),
     ]
-    for command in commands:
-        code, out, _ = run_cli(*command)
-        assert code == 0, (command[0], out)
-    assert json.loads(out_file.read_text("utf-8")) == load("coverage_report.json")
+    (Path(tmp_path) / "run").mkdir()
+    with in_dir(tmp_path):
+        for command in commands:
+            code, out, _ = run_cli(*command)
+            assert code == 0, (command[0], out)
+    written = Path(tmp_path) / "run" / "coverage_report.json"
+    assert json.loads(written.read_text("utf-8")) == load("coverage_report.json")
 
 
 @pytest.mark.ts13
@@ -207,3 +209,19 @@ def test_ts14_built_skill_is_self_contained(tmp_path):
         [sys.executable, "scripts/sampling.py", "check-run", "assets/example_run"],
         cwd=unpacked, capture_output=True, text=True)
     assert done.returncode == 0 and "RESULT: PASS" in done.stdout
+
+
+@pytest.mark.ts13
+@pytest.mark.parametrize("target", ["../escape.json", "ABSOLUTE", "report.txt", "."],
+                         ids=["parent-folder", "absolute-outside", "wrong-extension", "folder"])
+def test_ts13_output_file_must_stay_in_the_working_directory(tmp_path, target):
+    work = Path(tmp_path) / "work"
+    work.mkdir()
+    outside = Path(tmp_path) / "outside.json"
+    target = str(outside) if target == "ABSOLUTE" else target
+    with in_dir(work):
+        code, _, err = run_cli("verify", "--spec", GOOD / "sampling_spec.json",
+                               "--sample-dir", GOOD / "sample", "--ticket", "DEMO-123",
+                               "--out", target)
+    assert code == 2 and "--out must be a .json file inside the current directory" in err
+    assert not outside.exists() and not (Path(tmp_path) / "escape.json").exists()

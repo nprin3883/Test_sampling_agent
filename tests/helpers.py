@@ -3,6 +3,7 @@ import contextlib
 import copy
 import io
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -51,6 +52,17 @@ def copy_run(tmp_path):
 
 def write_json(path, obj):
     Path(path).write_text(json.dumps(obj, indent=2), encoding="utf-8")
+
+
+@contextlib.contextmanager
+def in_dir(path):
+    """Run a block with the given folder as working directory (--out is relative to it)."""
+    previous = os.getcwd()
+    os.chdir(path)
+    try:
+        yield Path(path)
+    finally:
+        os.chdir(previous)
 
 
 def run_cli(*argv):

@@ -30,24 +30,27 @@ Run all of them with a result table: `bash scripts/run_scenarios.sh`.
 
 ```bash
 export PYTHONPATH=src
-cp -r tests/fixtures/good_run /tmp/run
+rm -rf demo_run && cp -r tests/fixtures/good_run demo_run   # git-ignored scratch copy
 
 # 1. baseline: passes
-python3 -m sampling_validator.cli check-run /tmp/run
+python3 -m sampling_validator.cli check-run demo_run
 
 # 2. the agent approves its own specification -> SPC-011
-sed -i 's/"data_architect": "A. Example"/"data_architect": "Claude"/' /tmp/run/sampling_spec.json
-python3 -m sampling_validator.cli check-run /tmp/run; echo "exit code: $?"
-cp tests/fixtures/good_run/sampling_spec.json /tmp/run/
+sed -i 's/"data_architect": "A. Example"/"data_architect": "Claude"/' demo_run/sampling_spec.json
+python3 -m sampling_validator.cli check-run demo_run; echo "exit code: $?"
+cp tests/fixtures/good_run/sampling_spec.json demo_run/
 
 # 3. the extracted sample loses its late-arriving orders -> the old report no longer matches (COV-008)
-sed -i '/^O013,/d;/^O027,/d' /tmp/run/sample/CUSTOMER_ORDER.csv
-python3 -m sampling_validator.cli check-run /tmp/run
+sed -i '/^O013,/d;/^O027,/d' demo_run/sample/CUSTOMER_ORDER.csv
+python3 -m sampling_validator.cli check-run demo_run
 
 # 4. recompute the report honestly -> scenario S06 is missing (COV-002)
-python3 -m sampling_validator.cli verify --spec /tmp/run/sampling_spec.json \
-  --sample-dir /tmp/run/sample --ticket DEMO-123 --out /tmp/run/coverage_report.json
+python3 -m sampling_validator.cli verify --spec demo_run/sampling_spec.json \
+  --sample-dir demo_run/sample --ticket DEMO-123 --out demo_run/coverage_report.json
 ```
+
+`--out` only accepts a file inside the current directory, with the expected extension
+(`.json` for `verify`, `.md` for `evaluate`). Anything else exits with code 2.
 
 ## The synthetic example
 

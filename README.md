@@ -55,7 +55,8 @@ export PYTHONPATH=src
 python3 -m sampling_validator.cli check-run path/to/run
 ```
 
-Exit code 0 = no errors, 1 = errors found, 2 = unreadable input. Add `--json` before the command for
+Exit code 0 = no errors, 1 = errors found, 2 = unreadable input or an `--out` path outside the
+current directory. Add `--json` before the command for
 machine-readable output.
 
 ## Evaluate the agent against a general-purpose LLM
